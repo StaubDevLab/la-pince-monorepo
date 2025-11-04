@@ -16,7 +16,7 @@ export const FirstLoginSchema = z.object({
 
 export type FirstLoginDto = z.infer<typeof FirstLoginSchema>;
 
-// DTO de description pour Swagger (utilisé par @ApiBody)
+
 export class FirstLoginInput {
   @ApiPropertyOptional({ type: Number, minimum: 0, example: 0 })
   totalAmount?: number;

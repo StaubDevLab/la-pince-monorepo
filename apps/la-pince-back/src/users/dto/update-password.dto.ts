@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ApiProperty } from '@nestjs/swagger';
 
 export const UpdatePasswordSchema = z.object({
   currentPassword: z.string(),
@@ -15,3 +16,15 @@ export const UpdatePasswordSchema = z.object({
 });
 
 export type UpdatePasswordDto = z.infer<typeof UpdatePasswordSchema>;
+
+
+export class UpdatePasswordInput {
+  @ApiProperty({ type: String, format: 'password', description: 'Mot de passe actuel' })
+  currentPassword!: string;
+
+  @ApiProperty({ type: String, format: 'password', minLength: 12, description: 'Doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial', example: 'NewSecurePass123!' })
+  newPassword!: string;
+
+  @ApiProperty({ type: String, format: 'password', minLength: 12, description: 'Doit correspondre au nouveau mot de passe', example: 'NewSecurePass123!' })
+  confirmNewPassword!: string;
+}
