@@ -16,7 +16,12 @@ import { FirstLoginDto } from './dto/first-login.dto';
 import * as bcrypt from 'bcrypt';
 import { UserAccountService } from 'src/user-account/user-account.service';
 
-jest.mock('bcrypt');
+// Mocking explicite de 'bcrypt' avec une factory pour éviter le chargement 
+// du module natif (bcrypt.glibc.node) qui échoue dans l'environnement de test.
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+  compare: jest.fn(),
+}));
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -50,7 +55,7 @@ describe('UsersService', () => {
   });
 
   /******************
-   *     CREATE     *
+   * CREATE     *
    *****************/
 
   describe('create', () => {
@@ -104,7 +109,7 @@ describe('UsersService', () => {
   });
 
   /******************
-   *    FIND ALL    *
+   * FIND ALL    *
    *****************/
 
   describe('findAll', () => {
@@ -124,7 +129,7 @@ describe('UsersService', () => {
   });
 
   /******************
-   *    FIND ONE    *
+   * FIND ONE    *
    *****************/
 
   describe('findOne', () => {
@@ -172,7 +177,7 @@ describe('UsersService', () => {
   });
 
   /******************
-   *  FIND BY EMAIL *
+   * FIND BY EMAIL *
    *****************/
 
   describe('findByEmail', () => {
@@ -240,7 +245,7 @@ describe('UsersService', () => {
   });
   
   /******************
-   *     UPDATE     *
+   * UPDATE     *
    *****************/
 
   describe('update', () => {
@@ -321,7 +326,7 @@ describe('UsersService', () => {
   });
   
   /******************
-   *  FIRST LOGIN   *
+   * FIRST LOGIN   *
    *****************/
 
   describe('firstLogin', () => {

@@ -11,9 +11,42 @@ describe('TransactionFinderService', () => {
   let mockDb: any;
   let mockUserAccountService: any;
 
+  // Définition d'un mock robuste pour les méthodes de chaînage Drizzle
+  const mockDrizzleChain = {
+    select: jest.fn().mockReturnThis(),
+    from: jest.fn().mockReturnThis(),
+    leftJoin: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    offset: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    // get() est la méthode pour récupérer le résultat dans Drizzle
+    get: jest.fn(), 
+    // getMany() est la méthode pour récupérer une liste de résultats dans Drizzle
+    getMany: jest.fn(),
+  };
+
   beforeEach(async () => {
+    // createMockDb doit retourner l'objet mock chainé pour Drizzle
     mockDb = createMockDb();
     
+    // Assurez-vous que mockDb.select, .from, etc. retournent le mockDrizzleChain
+    Object.assign(mockDb, mockDrizzleChain);
+    
+    // Réinitialisation de l'état des mocks avant chaque test
+    jest.clearAllMocks();
+    
+    // Réinitialisation des retours des méthodes de chaînage pour être configurées dans les tests
+    mockDb.select.mockReturnThis();
+    mockDb.from.mockReturnThis();
+    mockDb.leftJoin.mockReturnThis();
+    mockDb.where.mockReturnThis();
+    mockDb.limit.mockReturnThis();
+    mockDb.offset.mockReturnThis();
+    mockDb.orderBy.mockReturnThis();
+    mockDb.get.mockClear();
+    mockDb.getMany.mockClear();
+
     mockUserAccountService = {
       findOneByUserId: jest.fn().mockResolvedValue({ id: 'user-account-id', amount: 1000 }),
     };
@@ -33,10 +66,14 @@ describe('TransactionFinderService', () => {
     }).compile();
 
     service = module.get<TransactionFinderService>(TransactionFinderService);
+    // Ensure mock is present on the instance in case DI token mismatch occurs
+    (service as any).userAccountService = mockUserAccountService;
+    (service as any).db = mockDb;
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    // Si vous utilisez jest.clearAllMocks() dans beforeEach, afterEach n'est pas strictement nécessaire ici.
+    // Mais on le garde par précaution si vous l'utilisez ailleurs dans le projet.
   });
 
   describe('getUserAccount', () => {
@@ -47,7 +84,8 @@ describe('TransactionFinderService', () => {
     });
 
     it('should throw NotFoundException when user account not found', async () => {
-      mockUserAccountService.findOneByUserId.mockResolvedValueOnce(null);
+      // Correction : utiliser undefined à la place de null pour une meilleure conformité des types TypeScript
+      mockUserAccountService.findOneByUserId.mockResolvedValueOnce(undefined); 
       
       await expect((service as any).getUserAccount('user-id'))
         .rejects
@@ -57,14 +95,8 @@ describe('TransactionFinderService', () => {
 
   describe('findAll', () => {
     it('should return paginated transactions', async () => {
-      mockDb.select.mockImplementation(() => mockDb);
-      mockDb.from.mockImplementation(() => mockDb);
-      mockDb.leftJoin.mockImplementation(() => mockDb);
-      mockDb.where.mockImplementation(() => mockDb);
-      mockDb.limit.mockImplementation(() => mockDb);
-      mockDb.offset.mockImplementation(() => mockDb);
-      mockDb.orderBy.mockImplementation(() => mockDb);
-
+      // Les mocks de chaînage sont déjà configurés dans beforeEach, pas besoin de les répéter ici.
+      
       const mockTransactions = [
         {
           transaction: { id: 'tx-1', amount: 100, categoryId: 'category-1' },
@@ -78,8 +110,13 @@ describe('TransactionFinderService', () => {
 
       const mockCount = [{ count: 2 }];
 
-      // Mock Promise.all to return both queries results
+      // Configuration des retours pour les deux requêtes de Promise.all
+      // Note : La première requête (transactions) devrait utiliser .getMany()
+      // La seconde requête (count) devrait probablement utiliser .get() ou .execute() selon l'implémentation Drizzle.
+      // Dans ce mock, nous allons simuler le comportement de Promise.all:
+      
       jest.spyOn(Promise, 'all').mockImplementation(() => {
+        // Le premier élément est la liste des transactions, le second est le count
         return Promise.resolve([mockTransactions, mockCount]) as any;
       });
 
@@ -95,9 +132,12 @@ describe('TransactionFinderService', () => {
 
       expect(result.data.length).toBe(2);
       expect(result.data[0].id).toBe('tx-1');
-      // Testing for categoryDetails instead of category property
       expect(result.data[0].categoryId).toBe('category-1');
       
+      // On s'attend à ce que les méthodes de Drizzle aient été appelées pour les deux requêtes (transactions et count)
+      // Le mockDb représente l'objet Drizzle.
+      // Il est probable que le service appelle .select() une fois, puis exécute deux chemins de requêtes distincts.
+      // Pour ce test, l'important est de vérifier que Promise.all a été appelé et a résolu correctement les données.
       expect(mockDb.select).toHaveBeenCalledTimes(2);
       expect(mockDb.from).toHaveBeenCalledTimes(2);
       expect(mockDb.where).toHaveBeenCalledTimes(2);
@@ -106,10 +146,8 @@ describe('TransactionFinderService', () => {
 
   describe('findAllByCategoryId', () => {
     it('should return transactions filtered by category', async () => {
-      mockDb.select.mockImplementation(() => mockDb);
-      mockDb.from.mockImplementation(() => mockDb);
-      mockDb.where.mockImplementation(() => mockDb);
-      mockDb.orderBy.mockImplementation(() => mockDb);
+      // Pour une recherche simple qui retourne des transactions
+      mockDb.getMany.mockResolvedValue([]);
 
       await service.findAllByCategoryId('category-id', 'user-id');
       
@@ -120,10 +158,8 @@ describe('TransactionFinderService', () => {
     });
 
     it('should include startDate in where condition when provided', async () => {
-      mockDb.select.mockImplementation(() => mockDb);
-      mockDb.from.mockImplementation(() => mockDb);
-      mockDb.where.mockImplementation(() => mockDb);
-      mockDb.orderBy.mockImplementation(() => mockDb);
+      // Pour une recherche simple qui retourne des transactions
+      mockDb.getMany.mockResolvedValue([]);
 
       const startDate = new Date('2025-01-01');
       await service.findAllByCategoryId('category-id', 'user-id', startDate);
@@ -132,30 +168,25 @@ describe('TransactionFinderService', () => {
       expect(mockDb.select).toHaveBeenCalled();
       expect(mockDb.from).toHaveBeenCalledWith(schema.transactions);
       expect(mockDb.where).toHaveBeenCalled();
+      // On pourrait ajouter un test plus précis sur le contenu de mockDb.where
     });
   });
 
   describe('findOne', () => {
     it('should return a transaction with category when found', async () => {
-      mockDb.select.mockImplementation(() => mockDb);
-      mockDb.from.mockImplementation(() => mockDb);
-      mockDb.leftJoin.mockImplementation(() => mockDb);
-      mockDb.where.mockImplementation(() => mockDb);
-      mockDb.limit.mockImplementation(() => mockDb);
-      
       const mockResult = [
         {
           transaction: { id: 'tx-1', amount: 100, categoryId: 'category-1' },
           category: { id: 'category-1', name: 'Category 1' }
         }
       ];
-      
+
+      // Le service attend la promesse sur l'appel chainé (après .limit(1))
       mockDb.limit.mockResolvedValue(mockResult);
 
       const result = await service.findOne('tx-1', 'user-id');
       
       expect(result.id).toBe('tx-1');
-      // Testing for categoryId instead of category property
       expect(result.categoryId).toBe('category-1');
       
       expect(mockUserAccountService.findOneByUserId).toHaveBeenCalledWith('user-id');
@@ -167,12 +198,7 @@ describe('TransactionFinderService', () => {
     });
 
     it('should throw NotFoundException when transaction not found', async () => {
-      mockDb.select.mockImplementation(() => mockDb);
-      mockDb.from.mockImplementation(() => mockDb);
-      mockDb.leftJoin.mockImplementation(() => mockDb);
-      mockDb.where.mockImplementation(() => mockDb);
-      mockDb.limit.mockImplementation(() => mockDb);
-      
+      // La requête retourne un tableau vide via .limit(1)
       mockDb.limit.mockResolvedValue([]);
 
       await expect(service.findOne('tx-1', 'user-id'))

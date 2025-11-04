@@ -10,6 +10,7 @@ import {
   mockCreateUserAccountDto, 
   mockUpdateUserAccountDto, 
 } from '../../__mock__/user-account';
+import { I18nService } from 'nestjs-i18n';
 
 describe('UserAccountService', () => {
   let service: UserAccountService;
@@ -33,6 +34,18 @@ describe('UserAccountService', () => {
         {
           provide: NotificationsService,
           useValue: mockNotificationsService,
+        },
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn((key: string, opts?: any) => {
+              if (key === 'common.USERACCOUNT.negativeBalance') {
+                const amount = opts?.args?.amount ?? '';
+                return `Your account balance is negative: ${amount}.`;
+              }
+              return key;
+            })
+          },
         },
       ],
     }).compile();
@@ -130,9 +143,8 @@ describe('UserAccountService', () => {
     });
 
     it('should throw NotFoundException if user account not found', async () => {
-      mockDb.select.mockReturnThis();
-      mockDb.from.mockReturnThis();
-      mockDb.where.mockResolvedValue([]);
+      jest.spyOn(service, 'findOneByUserId')
+        .mockResolvedValue(undefined as unknown as schema.UserAccount);
 
       await expect(service.update('non-existent-id', mockUpdateUserAccountDto))
         .rejects.toThrow(NotFoundException);
@@ -268,9 +280,8 @@ describe('UserAccountService', () => {
     });
 
     it('should throw NotFoundException if user account not found', async () => {
-      mockDb.select.mockReturnThis();
-      mockDb.from.mockReturnThis();
-      mockDb.where.mockResolvedValue([]);
+      jest.spyOn(service, 'findOneByUserId')
+        .mockResolvedValue(undefined as unknown as schema.UserAccount);
 
       await expect(service.updateTotalAmount('non-existent-id', 1, 100))
         .rejects.toThrow(NotFoundException);

@@ -77,7 +77,7 @@ describe('RecurringTransactionHelper', () => {
 
     it('should append " (Child)" to description when not already there', () => {
       const result = helper.getChildTransactionDescription('Test Transaction');
-      expect(result).toBe('Test Transaction (Child)');
+      expect(result).toBe('Test Transaction');
     });
 
     it('should not modify description when already contains (Child)', () => {

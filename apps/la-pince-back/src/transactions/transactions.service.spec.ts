@@ -13,6 +13,7 @@ import { NotFoundException } from '@nestjs/common';
 import * as schema from 'src/db/schema';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { I18nService } from 'nestjs-i18n'; // Import nécessaire
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
@@ -24,6 +25,7 @@ describe('TransactionsService', () => {
   let mockRecurringTransactionHelper: any;
   let mockTransactionFinderService: any;
   let mockTransactionUpdateService: any;
+  let mockI18nService: any; // Déclaration du mock I18n
 
   beforeEach(async () => {
     mockDb = createMockDb();
@@ -43,6 +45,14 @@ describe('TransactionsService', () => {
 
     mockNotificationsService = {
       create: jest.fn().mockResolvedValue(null),
+    };
+    
+    // FIX: Définition du mock I18nService avec la méthode 't'
+    mockI18nService = {
+      t: jest.fn().mockImplementation((key, options) => {
+        // Retourne une chaîne simple pour simuler la traduction
+        return `Translated: ${key}`;
+      }),
     };
 
     mockRecurringTransactionHelper = {
@@ -120,6 +130,11 @@ describe('TransactionsService', () => {
         {
           provide: TransactionUpdateService,
           useValue: mockTransactionUpdateService,
+        },
+        // FIX: Fournir I18nService
+        {
+          provide: I18nService,
+          useValue: mockI18nService,
         },
       ],
     }).compile();
@@ -257,6 +272,7 @@ describe('TransactionsService', () => {
       expect(mockBudgetService.updateActualAmount).toHaveBeenCalled();
       expect(mockUserAccountService.updateTotalAmount).toHaveBeenCalled();
       expect(mockNotificationsService.create).toHaveBeenCalled();
+      // Le mockI18nService.t est maintenant correctement appelé.
     });
   });
 

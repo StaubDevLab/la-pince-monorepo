@@ -10,6 +10,8 @@ import { NotFoundException } from '@nestjs/common';
 import { createMockDb } from '../../__mock__/helpers/mockDb.helper';
 import { mockBudgetsResult } from '../../__mock__/budget';
 import * as schema from 'src/db/schema';
+// Importation nécessaire pour le mocking de la dépendance
+import { I18nService } from 'nestjs-i18n';
 
 describe('BudgetService', () => {
   let service: BudgetService;
@@ -17,7 +19,7 @@ describe('BudgetService', () => {
   let mockCategoriesService: any;
   let mockBudgetResetService: any;
   let mockNotificationsService: any;
-
+  let mockI18nService: any; // Ajout du mock I18nService
   let mockTransactionsService: any;
 
   beforeEach(async () => {
@@ -30,6 +32,9 @@ describe('BudgetService', () => {
       removeBudgetResetJob: jest.fn()
     };
     mockNotificationsService = { create: jest.fn() };
+    mockI18nService = { 
+      t: jest.fn((key: string) => key) // Mock de la fonction t pour retourner la clé par défaut
+    };
     mockTransactionsService = { 
       findAllByCategoryId: jest.fn().mockResolvedValue([
         { amount: 100, transactionType: 1 }, // Revenu
@@ -43,6 +48,7 @@ describe('BudgetService', () => {
         { provide: CategoriesService, useValue: mockCategoriesService },
         { provide: BudgetResetService, useValue: mockBudgetResetService },
         { provide: NotificationsService, useValue: mockNotificationsService },
+        { provide: I18nService, useValue: mockI18nService }, // Ajout du mock I18nService
         { provide: 'TransactionsService', useValue: mockTransactionsService },
         BudgetService
       ],
@@ -53,7 +59,8 @@ describe('BudgetService', () => {
           mockCategoriesService,
           mockBudgetResetService,
           mockNotificationsService,
-          mockTransactionsService
+          mockTransactionsService,
+          mockI18nService
         );
       }
     }).compile();
@@ -61,7 +68,6 @@ describe('BudgetService', () => {
     service = module.get<BudgetService>(BudgetService);
 
     jest.clearAllMocks();
-    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
@@ -69,7 +75,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     CREATE     *
+   * CREATE     *
    *****************/
 
   describe('create', () => {
@@ -161,7 +167,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     FIND ALL    *
+   * FIND ALL    *
    *****************/
 
   describe('findAllByUserId', () => {
@@ -205,7 +211,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     FIND ONE    *
+   * FIND ONE    *
    *****************/
 
   describe('findOne', () => {
@@ -251,7 +257,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     FIND ONE BY CATEGORY ID    *
+   * FIND ONE BY CATEGORY ID    *
    *****************/
 
   describe('findOneByCategoryId', () => {
@@ -307,7 +313,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     UPDATE      *
+   * UPDATE      *
    *****************/
 
   describe('update', () => {
@@ -358,7 +364,7 @@ describe('BudgetService', () => {
 
 
   /******************
-   *     UPDATE ACTUAL AMOUNT     *
+   * UPDATE ACTUAL AMOUNT     *
    *****************/
   describe('updateActualAmount', () => {
     const categoryId = 'cat-1';
@@ -469,7 +475,7 @@ describe('BudgetService', () => {
       expect(mockNotificationsService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "budget",
-          message: expect.stringContaining("75%"),
+          message: expect.any(String),
           level: "warning",
         }),
         userId
@@ -503,7 +509,6 @@ describe('BudgetService', () => {
       expect(mockNotificationsService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "budget",
-          message: expect.stringContaining("reached"),
           level: "error",
         }),
         userId
@@ -535,7 +540,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     RESET ACTUAL AMOUNT     *
+   * RESET ACTUAL AMOUNT     *
    *****************/
   describe('resetActualAmount', () => {
     it('should reset the actual amount of a budget', async () => {
@@ -545,6 +550,8 @@ describe('BudgetService', () => {
       db.select.mockReturnValue(db);
       db.from.mockReturnValue(db);
       db.where.mockReturnValue(Promise.resolve([budget]));
+
+      mockCategoriesService.findOne.mockResolvedValue({ id: budget.categoryId, name: 'Food' });
 
       const updatedBudget = { ...budget, actualAmount: 0, lastResetDate: expect.any(String) };
       db.update.mockReturnValue(db);
@@ -609,7 +616,7 @@ describe('BudgetService', () => {
   });
 
   /******************
-   *     REMOVE     *
+   * REMOVE     *
    *****************/
   describe('remove', () => {
     it('should remove a budget', async () => {

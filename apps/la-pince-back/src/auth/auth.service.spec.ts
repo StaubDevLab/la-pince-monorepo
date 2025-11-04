@@ -9,6 +9,7 @@ import {RegisterDto} from "./dto/register.dto";
 import 'dotenv/config'
 import {UnauthorizedException} from "@nestjs/common";
 import { mockUsersResult, expectedUser, mockAccessToken } from '../../__mock__/auth';
+import * as bcrypt from 'bcrypt';
 
 
 describe('AuthService', () => {
@@ -129,6 +130,8 @@ describe('AuthService', () => {
 
       mockJwtService.signAsync.mockResolvedValueOnce(mockAccessToken);
 
+      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true as any);
+
       jest.spyOn(service as any, 'createToken').mockImplementation(async () => (expectedUser));
 
       const result = await service.login(user.email, user.password);
@@ -160,6 +163,8 @@ describe('AuthService', () => {
       }
 
       mockUsersService.findByEmail.mockResolvedValueOnce(mockUsersResult)
+
+      jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false as any);
 
       const result = service.login(user.email, user.password);
 

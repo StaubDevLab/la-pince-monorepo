@@ -7,6 +7,55 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "src(.*)": "<rootDir>/src/$1"
+    "src(.*)": "<rootDir>/src/$1",
+    "^bcrypt$": "<rootDir>/jest-bcrypt-mock.js"
+  },
+
+  "collectCoverage": true,
+  "coverageProvider": "v8",
+  "coverageDirectory": "coverage",
+  "coverageReporters": ["text", "lcov", "json-summary"],
+
+  "collectCoverageFrom": [
+    "src/auth/**/*.{ts,tsx}",
+    "src/budget/**/*.{ts,tsx}",
+    "src/transactions/**/*.{ts,tsx}",
+    "src/user-account/**/*.{ts,tsx}",
+    "src/mail/**/*.{ts,tsx}",
+
+    "!**/*.spec.ts",
+    "!**/*.module.ts",
+    "!**/*.dto.ts",
+    "!**/*.entity.ts",
+    "!**/interfaces/**",
+    "!**/types/**",
+    "!**/constants/**",
+    "!**/config/**",
+    "!**/generated/**",
+    "!**/migrations/**",
+    "!src/db/schema/**",
+    "!src/**/__mocks__/**",
+    "!src/**/__mock__/**",
+    "!src/main.ts"
+  ],
+
+  "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "/dist/"
+  ],
+
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "/dist/",
+    "/e2e/"
+  ],
+
+  "coverageThreshold": {
+    "global": {
+      "branches": 70,
+      "functions": 70,
+      "lines": 70,
+      "statements": 70
+    }
   }
 }

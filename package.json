@@ -20,6 +20,25 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "clean": "rimraf node_modules **/node_modules .turbo"
+    "clean": "rimraf node_modules **/node_modules .turbo",
+    "test:back": "npm --workspace apps/la-pince-back run test",
+    "test:watch:back": "npm --workspace apps/la-pince-back run test:watch",
+    "test:cov:back": "npm --workspace apps/la-pince-back run test:cov",
+    "test:debug:back": "npm --workspace apps/la-pince-back run test:debug",
+    "test:e2e:back": "npm --workspace apps/la-pince-back run test:e2e",
+    "lint:back": "npm --workspace apps/la-pince-back run lint",
+    "format:back": "npm --workspace apps/la-pince-back run format",
+    "build:back": "npm --workspace apps/la-pince-back run build",
+    "start:back": "npm --workspace apps/la-pince-back run start",
+    "start:dev:back": "npm --workspace apps/la-pince-back run start:dev",
+    "test:front": "npm --workspace apps/la-pince-front run test",
+    "test:watch:front": "npm --workspace apps/la-pince-front run test:watch",
+    "test:cov:front": "npm --workspace apps/la-pince-front run test:cov",
+    "test:debug:front": "npm --workspace apps/la-pince-front run test:debug",
+    "test:e2e:front": "npm --workspace apps/la-pince-front run test:e2e",
+    "lint:front": "npm --workspace apps/la-pince-front run lint",
+    "format:front": "npm --workspace apps/la-pince-front run format",
+    "build:front": "npm --workspace apps/la-pince-front run build",
+    "start:front": "npm --workspace apps/la-pince-front run start"
   }
 }
