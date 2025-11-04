@@ -152,3 +152,6 @@ yarn-error.log*
 next-env.d.ts
 
 *.env*
+
+# nginx
+nginx/certs/
