@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { currencys } from 'src/db/constants/currency';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export const CreateUserAccountSchema = z.object({
   accountName: z.string().trim(),
@@ -10,3 +11,14 @@ export const CreateUserAccountSchema = z.object({
 })
 
 export type CreateUserAccountDto = z.infer<typeof CreateUserAccountSchema>;
+
+export class CreateUserAccountInput {
+  @ApiProperty({ type: String, example: 'Compte Principal' })
+  accountName!: string;
+
+  @ApiProperty({ type: Number, example: 0 })
+  amount!: number;
+
+  @ApiPropertyOptional({ type: String, enum: currencys, example: 'EUR' })
+  currency?: string;
+}
