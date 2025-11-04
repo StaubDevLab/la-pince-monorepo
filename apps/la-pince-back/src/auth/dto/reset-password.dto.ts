@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+import { ApiProperty } from '@nestjs/swagger';
 export const ResetPasswordSchema = z.object({
     token: z.string().min(1, 'Token is required'),
     newPassword: z
@@ -16,3 +16,14 @@ export const ResetPasswordSchema = z.object({
 });
 
 export type ResetPasswordDto = z.infer<typeof ResetPasswordSchema>;
+
+export class ResetPasswordInput {
+    @ApiProperty({ type: String, description: 'Token de réinitialisation reçu par email', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+    token!: string;
+  
+    @ApiProperty({ type: String, format: 'password', minLength: 12, description: 'Doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial', example: 'NewSecurePass123!' })
+    newPassword!: string;
+  
+    @ApiProperty({ type: String, format: 'password', minLength: 12, description: 'Doit correspondre au nouveau mot de passe', example: 'NewSecurePass123!' })
+    confirmNewPassword!: string;
+  }

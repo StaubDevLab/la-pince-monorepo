@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { z } from 'zod';
 
 export const DeleteCategorySchema = z.object({
@@ -11,3 +12,11 @@ export const DeleteCategorySchema = z.object({
 });
 
 export type DeleteCategoryDto = z.infer<typeof DeleteCategorySchema>;
+
+export class DeleteCategoryInput {
+  @ApiPropertyOptional({ type: Boolean, default: false, description: 'Si true, remplace les transactions par une autre catégorie' })
+  replaceOldTransactionsCategoryId?: boolean;
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'UUID de la catégorie de remplacement (requis si replaceOldTransactionsCategoryId = true)' })
+  newCategoryId?: string;
+}

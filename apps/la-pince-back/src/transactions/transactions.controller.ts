@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseBoolPipe, ParseUUIDPipe, Query, DefaultValuePipe } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
-import { CreateTransactionDto, CreateTransactionSchema } from './dto/create-transaction.dto';
-import { UpdateTransactionDto, UpdateTransactionSchema } from './dto/update-transaction.dto';
+import { CreateTransactionDto, CreateTransactionInput, CreateTransactionSchema } from './dto/create-transaction.dto';
+import { UpdateTransactionDto, UpdateTransactionInput, UpdateTransactionSchema } from './dto/update-transaction.dto';
 import { ZodValidationPipe } from 'src/common/pipes/zod-validation.pipe';
 import { User, UserEntity } from '../decorator/user.decorator';
+import { ApiOperation, ApiTags, ApiBearerAuth, ApiCreatedResponse, ApiBody, ApiOkResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 
+@ApiTags('Transactions')
+@ApiBearerAuth()
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
@@ -14,6 +17,9 @@ export class TransactionsController {
    * @param createTransactionDto 
    * @returns 
    */
+  @ApiOperation({ summary: 'Créer une transaction' })
+  @ApiBody({ type: CreateTransactionInput })
+  @ApiCreatedResponse({ description: 'Transaction créée' })
   @Post()
   create(
     @Body(new ZodValidationPipe(CreateTransactionSchema)) createTransactionDto: CreateTransactionDto,
@@ -26,6 +32,10 @@ export class TransactionsController {
    * Get all transactions for a user
    * @returns 
    */
+  @ApiOperation({ summary: 'Lister les transactions (paginées)' })
+  @ApiQuery({ name: 'limit', required: false, schema: { type: 'integer', minimum: 1 }, example: 10 })
+  @ApiQuery({ name: 'page', required: false, schema: { type: 'integer', minimum: 0 }, example: 0 })
+  @ApiOkResponse({ description: 'Liste paginée des transactions' })
   @Get()
   findAll(
     @User() user: UserEntity,
@@ -40,6 +50,9 @@ export class TransactionsController {
    * @param id 
    * @returns 
    */
+  @ApiOperation({ summary: 'Récupérer une transaction par ID' })
+  @ApiParam({ name: 'id', description: 'UUID de la transaction', schema: { format: 'uuid' } })
+  @ApiOkResponse({ description: 'Transaction trouvée' })
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string, @User() user: UserEntity,) {
     return this.transactionsService.findOne(id, user.id);
@@ -52,6 +65,11 @@ export class TransactionsController {
    * @param req 
    * @returns 
    */
+  @ApiOperation({ summary: 'Mettre à jour une transaction' })
+  @ApiParam({ name: 'id', description: 'UUID de la transaction', schema: { format: 'uuid' } })
+  @ApiQuery({ name: 'updateNextChilds', required: false, schema: { type: 'boolean' }, example: false })
+  @ApiBody({ type: UpdateTransactionInput })
+  @ApiOkResponse({ description: 'Transaction mise à jour' })
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string, 
@@ -67,6 +85,10 @@ export class TransactionsController {
    * @param id 
    * @returns 
    */
+  @ApiOperation({ summary: 'Supprimer une transaction' })
+  @ApiParam({ name: 'id', description: 'UUID de la transaction', schema: { format: 'uuid' } })
+  @ApiQuery({ name: 'removeChildren', required: false, schema: { type: 'boolean' }, example: false })
+  @ApiOkResponse({ description: 'Transaction supprimée' })
   @Delete(':id')
   remove(
     @Param('id', ParseUUIDPipe) id: string, 
@@ -80,6 +102,9 @@ export class TransactionsController {
    * Stop a recurring transaction
    * @param id
    */
+  @ApiOperation({ summary: 'Arrêter une transaction récurrente' })
+  @ApiParam({ name: 'id', description: 'UUID de la transaction (parent ou enfant)', schema: { format: 'uuid' } })
+  @ApiOkResponse({ description: 'Transaction récurrente arrêtée' })
   @Delete('recurring/stop/:id')
   stopRecurringTransaction(
     @Param('id', ParseUUIDPipe) id: string,

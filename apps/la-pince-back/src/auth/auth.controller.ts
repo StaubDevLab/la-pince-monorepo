@@ -8,7 +8,15 @@ import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { RegisterDtoSchema, RegisterDto } from './dto/register.dto';
 import { ResetPasswordSchema, ResetPasswordDto } from './dto/reset-password.dto';
 import { Request } from 'express';
+import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { RegisterInput } from './dto/register.dto';
+import { LoginInput } from './dto/login.dto';
+import { RefreshInput } from './dto/refresh.dto';
+import { LogoutInput } from './dto/logout.dto';
+import { ForgotPasswordInput } from './dto/forgot-password.dto';
+import { ResetPasswordInput } from './dto/reset-password.dto';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -17,6 +25,9 @@ export class AuthController {
    * Register a new user
    * @param registerDto
    */
+  @ApiOperation({ summary: 'Inscription d\'un nouvel utilisateur' })
+  @ApiBody({ type: RegisterInput })
+  @ApiCreatedResponse({ description: 'Utilisateur créé avec succès, tokens retournés' })
   @Post('signup')
   @UsePipes(new ZodValidationPipe(RegisterDtoSchema))
   register(
@@ -30,6 +41,9 @@ export class AuthController {
    * Login a user
    * @param loginDto
    */
+  @ApiOperation({ summary: 'Connexion d\'un utilisateur' })
+  @ApiBody({ type: LoginInput })
+  @ApiOkResponse({ description: 'Connexion réussie, tokens retournés' })
   @Post('signin')
   @UsePipes(new ZodValidationPipe(LoginDtoSchema))
   @HttpCode(HttpStatus.OK)
@@ -44,6 +58,9 @@ export class AuthController {
    * Refresh a token
    * @param refreshToken
    */
+  @ApiOperation({ summary: 'Rafraîchir le token d\'accès' })
+  @ApiBody({ type: RefreshInput })
+  @ApiOkResponse({ description: 'Nouveau token d\'accès généré' })
   @Post('token/refresh')
   @UsePipes(new ZodValidationPipe(RefreshDtoSchema))
   @HttpCode(HttpStatus.OK)
@@ -56,6 +73,9 @@ export class AuthController {
    * Logout a user
    * @param sessionId
    */
+  @ApiOperation({ summary: 'Déconnexion d\'un utilisateur' })
+  @ApiBody({ type: LogoutInput })
+  @ApiOkResponse({ description: 'Déconnexion réussie, session révoquée' })
   @Post('logout')
   @UsePipes(new ZodValidationPipe(LogoutDtoSchema))
   @HttpCode(HttpStatus.OK)
@@ -69,6 +89,9 @@ export class AuthController {
    * @param forgotPasswordDto 
    * @returns 
    */
+  @ApiOperation({ summary: 'Demande de réinitialisation de mot de passe' })
+  @ApiBody({ type: ForgotPasswordInput })
+  @ApiOkResponse({ description: 'Si l\'email existe, un lien de réinitialisation a été envoyé' })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK) // Ensure the response is 200 OK, even if the email does not exist
   @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
@@ -82,6 +105,9 @@ export class AuthController {
    * @param resetPasswordDto 
    * @returns 
    */
+  @ApiOperation({ summary: 'Réinitialisation du mot de passe avec un token' })
+  @ApiBody({ type: ResetPasswordInput })
+  @ApiOkResponse({ description: 'Mot de passe réinitialisé avec succès' })
   @Post('reset-password')
   @UsePipes(new ZodValidationPipe(ResetPasswordSchema))
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {

@@ -23,3 +23,7 @@ export const CreateUserSchema = z.object({
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 
+export class CreateUserInput {
+
+}
+

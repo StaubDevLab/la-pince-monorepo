@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { locales as localesZones } from 'src/db/constants/locale';
 import { currencys } from 'src/db/constants/currency';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export const FirstLoginSchema = z.object({
   totalAmount: z.number().min(0, 'Total amount must be a positive number').optional(),
@@ -14,3 +15,18 @@ export const FirstLoginSchema = z.object({
 });
 
 export type FirstLoginDto = z.infer<typeof FirstLoginSchema>;
+
+// DTO de description pour Swagger (utilisé par @ApiBody)
+export class FirstLoginInput {
+  @ApiPropertyOptional({ type: Number, minimum: 0, example: 0 })
+  totalAmount?: number;
+
+  @ApiPropertyOptional({ type: String, enum: currencys, example: 'EUR' })
+  currency?: string;
+
+  @ApiPropertyOptional({ type: String, minLength: 1, example: 'Compte Principal' })
+  accountName?: string;
+
+  @ApiPropertyOptional({ type: String, enum: localesZones, example: 'fr-FR' })
+  locale?: string;
+}

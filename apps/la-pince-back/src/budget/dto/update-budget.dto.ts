@@ -2,7 +2,7 @@ import { z } from "zod";
 import dayjs from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { getClosestFrequency } from "src/common/validator/closest-frequency";
-
+import { ApiPropertyOptional } from '@nestjs/swagger';
 dayjs.extend(isSameOrBefore);
 
 const today = dayjs().startOf("day").toDate();
@@ -42,3 +42,14 @@ export const UpdateBudgetSchema = z.object({
 });
 
 export type UpdateBudgetDto = z.infer<typeof UpdateBudgetSchema>;
+
+export class UpdateBudgetInput {
+  @ApiPropertyOptional({ type: Number, description: 'Montant total du budget' })
+  totalAmount?: number;
+
+  @ApiPropertyOptional({ enum: ['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'], description: 'Fréquence de réinitialisation du budget' })
+  recurringFrequency?: 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'yearly' | number;
+
+  @ApiPropertyOptional({ type: String, description: 'Date de début ISO (doit être aujourd\'hui ou dans le passé)' })
+  recurringStartDate?: string;
+}
