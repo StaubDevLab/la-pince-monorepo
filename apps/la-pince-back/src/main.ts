@@ -4,6 +4,10 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const expressApp = app.getHttpAdapter().getInstance();
+if (expressApp && typeof expressApp.set === 'function') {
+  expressApp.set('trust proxy', true); // ou 1 pour “un proxy” en amont
+}
   app.setGlobalPrefix('v1/api');
 
   const config = new DocumentBuilder()
@@ -22,6 +26,6 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3333);
 }
 bootstrap();
