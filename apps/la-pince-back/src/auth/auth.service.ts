@@ -17,7 +17,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from 'src/mail/mail.service';
 import { oauth2_v2 } from 'googleapis';
-
+const ACCESS_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ?? '15m') as ms.StringValue;
+const REFRESH_EXPIRES_IN = (process.env.JWT_REFRESH_EXPIRES_IN ?? '7d') as ms.StringValue;
+const FORGOT_EXPIRES_IN = (process.env.JWT_FORGOT_PASSWORD_EXPIRES_IN ?? '15m') as ms.StringValue;
 @Injectable()
 export class AuthService {
   constructor(
@@ -160,8 +162,8 @@ export class AuthService {
         currency: user.currency || 'EUR', // Default currency
       },
       sessionId: refresh_token.sessionId,
-      accessToken: await this.jwtService.signAsync(payload, { expiresIn: process.env.JWT_EXPIRES_IN ?? '15m' }),
-      accessTokenExpiresAt: new Date(Date.now() + ms(process.env.JWT_EXPIRES_IN ?? '15m')),
+      accessToken: await this.jwtService.signAsync(payload, { expiresIn: ACCESS_EXPIRES_IN }),
+      accessTokenExpiresAt: new Date(Date.now() + ms(ACCESS_EXPIRES_IN)),
       refreshToken: refresh_token.refreshToken,
       refreshTokenExpiresAt: refresh_token.expiresAt,
     };
@@ -179,9 +181,9 @@ export class AuthService {
 
     const refreshToken = await this.jwtService.signAsync(
       payload,
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d' }
+      { expiresIn: REFRESH_EXPIRES_IN }
     );
-    const expiresAt = new Date(Date.now() + ms(process.env.JWT_REFRESH_EXPIRES_IN ?? '7d'));
+    const expiresAt = new Date(Date.now() + ms(REFRESH_EXPIRES_IN));
 
     // TODO : get IP address and User Agent in the request
 
@@ -249,10 +251,10 @@ export class AuthService {
 
       const newAccessToken = this.jwtService.sign(
         { sub: payload.sub, type: 'access' },
-        { expiresIn: process.env.JWT_EXPIRES_IN ?? '15m' }
+        { expiresIn: ACCESS_EXPIRES_IN }
       );
 
-      const expiresAt = new Date(Date.now() + ms(process.env.JWT_EXPIRES_IN ?? '15m'));
+      const expiresAt = new Date(Date.now() + ms(ACCESS_EXPIRES_IN));
 
       return {
         accessToken: newAccessToken,
@@ -326,7 +328,7 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, type: 'forgot-password' }
-    const token = await this.jwtService.signAsync(payload, { expiresIn: process.env.JWT_FORGOT_PASSWORD_EXPIRES_IN ?? '15m' })
+    const token = await this.jwtService.signAsync(payload, { expiresIn: FORGOT_EXPIRES_IN })
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
