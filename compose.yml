@@ -13,6 +13,7 @@ services:
       POSTGRES_DB: projet_la_pince_db
     volumes:
       - pgdata:/var/lib/postgresql/data 
+    networks: [la-pince-net]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -26,6 +27,7 @@ services:
       - "6379:6379"
     volumes:
       - valkey-data:/data
+    networks: [la-pince-net]
     healthcheck:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
@@ -37,6 +39,7 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    networks: [la-pince-net]
     depends_on:
       la-pince-db:
         condition: service_healthy
@@ -57,6 +60,7 @@ services:
     env_file:
       - .env
     tty: true
+    networks: [la-pince-net]
     depends_on:
       - la-pince-db
       - la-pince-cache
@@ -74,6 +78,7 @@ services:
       - .env
     depends_on:
       - la-pince-backend
+    networks: [la-pince-net]
     volumes:
       - ./apps/la-pince-front:/app
       - /app/node_modules
@@ -89,8 +94,12 @@ services:
     depends_on:
       - la-pince-backend
       - la-pince-front
+      - la-pince-adminer
+    networks: [la-pince-net]
 
 volumes:
   pgdata:
   valkey-data:
   mailhog-data:
+networks:
+  la-pince-net:
