@@ -1,0 +1,19 @@
+{
+  "welcome": "Welcome to the application!",
+
+  "USERACCOUNT": {
+    "negativeBalance": "Your account balance is negative: {amount} !!!"
+  },
+
+  "BUDGET": {
+    "75" : "Your budget for {categoryName} is 75% reached !!!",
+    "reached": "Your budget for {categoryName} is reached !!!",
+    "reset": "Your budget for {categoryName} has been reset !!!"
+  },
+
+  "TRANSACTIONS" : {
+    "CHILDREN": {
+      "created": "Child transaction created for {description}"
+    }
+  }
+}

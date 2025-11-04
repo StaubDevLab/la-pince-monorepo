@@ -1,0 +1,1 @@
+{"version":3,"file":"slack.config.js","sourceRoot":"","sources":["../../../src/slack/slack.config.ts"],"names":[],"mappings":";;;AAAa,QAAA,WAAW,GAAG;IACzB,OAAO,EAAE,OAAO,CAAC,GAAG,CAAC,aAAa,IAAI,SAAS;IAC/C,KAAK,EAAE,OAAO,CAAC,GAAG,CAAC,eAAe;IAClC,OAAO,EAAE,OAAO,CAAC,GAAG,CAAC,cAAc,IAAI,cAAc;IACrD,IAAI,EAAE,YAAY;IAClB,GAAG,EAAE,wCAAwC;CAC9C,CAAC"}

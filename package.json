@@ -1,0 +1,22 @@
+{
+  "name": "la-pince",
+  "private": true,
+  "workspaces": [
+    "apps/la-pince-front",
+    "apps/la-pince-back"
+  ],
+  "devDependencies": {
+    "turbo": "^2.6.0",
+    "concurrently": "^9.0.0",
+    "rimraf": "^6.0.1"
+  },
+  "scripts": {
+    "dev": "concurrently -n front,back -c green,cyan \"npm:dev:front\" \"npm:dev:back\"",
+    "dev:front": "npm --workspace la-pince-front run dev",
+    "dev:back": "npm --workspace apps/la-pince-back run start:dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "rimraf node_modules **/node_modules .turbo"
+  }
+}
